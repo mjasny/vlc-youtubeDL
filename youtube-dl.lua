@@ -13,7 +13,7 @@ function parse()
 
   --checks if youtube-dl exists, else download the right file or update it
 
-  local file = assert(io.popen('youtube-dl -j '..url, 'r'))  --run youtube-dl in json mode
+  local file = assert(io.popen('youtube-dl -j --flat-playlist '..url, 'r'))  --run youtube-dl in json mode
   local tracks = {}
   while true do
     local output = file:read('*l')
@@ -36,6 +36,10 @@ function parse()
       end
     end
     
+    if (json._type == "url" or json._type == "url_transparent") and json.ie_key == "Youtube" then
+      outurl = "https://www.youtube.com/watch?v="..outurl
+    end
+    
     if outurl then
       print("URL: "..outurl)
       print("NAME: "..json.title)
@@ -56,7 +60,7 @@ function parse()
       
       local thumbnail = nil
       if json.thumbnails then
-        thumbnail = json.thumbnails[table.getn(json.thumbnails)].url
+        thumbnail = json.thumbnails[#json.thumbnails].url
       end
 
       item = {
@@ -99,3 +103,4 @@ end
 function trim1(s)
   return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
+
