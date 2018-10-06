@@ -39,11 +39,10 @@ function parse()
     if outurl then
       print("URL: "..outurl)
       print("NAME: "..json.title)
-      print('ARTURL: '..json.thumbnail)
       
       local category = nil
       if json.categories then
-        category = json.categories[0]
+        category = json.categories[1]
       end
       
       local year = nil
@@ -54,24 +53,41 @@ function parse()
       elseif json.upload_date then
         year = string.sub(json.upload_date, 1, 4)
       end
+      
+      local thumbnail = nil
+      if json.thumbnails then
+        thumbnail = json.thumbnails[table.getn(json.thumbnails)].url
+      end
 
       item = {
-          path = outurl;
-          name = json.title;
-          title = json.fulltitle or json.alt_title;
-          artist = json.artist or json.creator or json.uploader;
-          genre = json.genre or category;
-          copyright = json.license;
-          album = json.album or json.series;
-          tracknum = json.track_number or json.chapter_number or json.episode_number;
-          description = json.description;
-          rating = json.average_rating;
-          date = year;
-          url = json.webpage_url or url;
-          arturl = json.thumbnail;
-          trackid = json.track_id or json.episode_id or json.id;
-          duration = json.duration;
-          meta = json;
+        path         = outurl;
+        name         = json.title;
+        duration     = json.duration;
+        
+        title        = json.track or json.title;
+        artist       = json.artist or json.creator or json.uploader;
+        genre        = json.genre or category;
+        copyright    = json.license;
+        album        = json.album;
+        tracknum     = json.track_number;
+        description  = json.description;
+        rating       = json.average_rating;
+        date         = year;
+        --setting
+        url          = json.webpage_url or url;
+        --language
+        --nowplaying
+        --publisher
+        --encodedby
+        arturl       = json.thumbnail or thumbnail;
+        trackid      = json.track_id or json.episode_id or json.id;
+        --director
+        season       = json.season or json.season_number or json.season_id;
+        episode      = json.episode or json.episode_number;
+        show_name    = json.series;
+        --actors
+        
+        meta         = json;
       }
       table.insert(tracks, item)
     end
