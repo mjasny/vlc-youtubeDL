@@ -18,7 +18,6 @@ end
 -- Parse function.
 function parse()
   local url = vlc.access.."://"..vlc.path -- get full url
-  print( "Using youtube-dl for: "..url )
 
   --checks if youtube-dl exists, else download the right file or update it
 
@@ -58,9 +57,6 @@ function parse()
     end
     
     if outurl then
-      print("URL: "..outurl)
-      print("NAME: "..json.title)
-      
       if (json._type == "url" or json._type == "url_transparent") and json.ie_key == "Youtube" then
         outurl = "https://www.youtube.com/watch?v="..outurl
       end
@@ -128,9 +124,5 @@ function parse()
   end
   file:close()
   return tracks
-end
-
-function trim1(s)
-  return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
