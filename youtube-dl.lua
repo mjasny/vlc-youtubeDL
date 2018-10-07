@@ -68,12 +68,13 @@ function parse()
         name         = json.title;
         duration     = json.duration;
         
+        -- for a list of these check vlc/modules/lua/libs/sd.c
         title        = json.track or json.title;
-        artist       = json.artist or json.creator or json.uploader;
+        artist       = json.artist or json.creator or json.uploader or json.playlist_uploader;
         genre        = json.genre or category;
         copyright    = json.license;
-        album        = json.album;
-        tracknum     = json.track_number;
+        album        = json.album or json.playlist_title or json.playlist;
+        tracknum     = json.track_number or json.playlist_index;
         description  = json.description;
         rating       = json.average_rating;
         date         = year;
@@ -85,6 +86,7 @@ function parse()
         --encodedby
         arturl       = json.thumbnail or thumbnail;
         trackid      = json.track_id or json.episode_id or json.id;
+        tracktotal   = json.n_entries;
         --director
         season       = json.season or json.season_number or json.season_id;
         episode      = json.episode or json.episode_number;
