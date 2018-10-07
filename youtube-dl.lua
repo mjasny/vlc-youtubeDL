@@ -2,8 +2,17 @@ JSON = require "dkjson" -- load additional json routines
 
 -- Probe function.
 function probe()
-  return ( vlc.access == "http" or vlc.access == "https" )
-    -- better checks needed ??
+  if vlc.access == "http" or vlc.access == "https" then
+    peeklen = 9
+    s = ""
+    while string.len(s) < 9 do
+      s = string.lower(string.gsub(vlc.peek(peeklen), "%s", ""))
+      peeklen = peeklen+1
+    end
+    return s == "<!doctype"
+  else
+    return false
+  end
 end
 
 -- Parse function.
@@ -34,16 +43,28 @@ function parse()
       for key, format in pairs(json.formats) do
         outurl = format.url
       end
-    end
-    
-    if (json._type == "url" or json._type == "url_transparent") and json.ie_key == "Youtube" then
-      outurl = "https://www.youtube.com/watch?v="..outurl
+      -- prefer audio and video
+      for key, format in pairs(json.formats) do
+        if format.vcodec and format.acodec then
+          outurl = format.url
+        end
+      end
+      -- prefer streaming formats
+      for key, format in pairs(json.formats) do
+        if format.manifest_url then
+          outurl = format.manifest_url
+        end
+      end
     end
     
     if outurl then
       print("URL: "..outurl)
       print("NAME: "..json.title)
       
+      if (json._type == "url" or json._type == "url_transparent") and json.ie_key == "Youtube" then
+        outurl = "https://www.youtube.com/watch?v="..outurl
+      end
+
       local category = nil
       if json.categories then
         category = json.categories[1]
@@ -62,6 +83,13 @@ function parse()
       if json.thumbnails then
         thumbnail = json.thumbnails[#json.thumbnails].url
       end
+      
+      jsoncopy = {}
+      for k in pairs(json) do
+        jsoncopy[k] = tostring(json[k])
+      end
+      
+      json = jsoncopy
 
       item = {
         path         = outurl;
