@@ -37,21 +37,36 @@ function parse()
     end
     
     local outurl = json.url
+    local out_includes_audio = true
+    local audiourl = nil
     if not outurl then
-      -- choose best
-      for key, format in pairs(json.formats) do
-        outurl = format.url
-      end
-      -- prefer audio and video
-      for key, format in pairs(json.formats) do
-        if format.vcodec ~= (nil or "none") and format.acodec ~= (nil or "none") then
+      if json.requested_formats then
+        for key, format in pairs(json.requested_formats) do
+          if format.vcodec ~= (nil or "none") then
+            outurl = format.url
+            out_includes_audio = format.acodec ~= (nil or "none")
+          end
+
+          if format.acodec ~= (nil or "none") then
+            audiourl = format.url
+          end
+        end
+      else
+        -- choose best
+        for key, format in pairs(json.formats) do
           outurl = format.url
         end
-      end
-      -- prefer streaming formats
-      for key, format in pairs(json.formats) do
-        if format.manifest_url then
-          outurl = format.manifest_url
+        -- prefer audio and video
+        for key, format in pairs(json.formats) do
+          if format.vcodec ~= (nil or "none") and format.acodec ~= (nil or "none") then
+            outurl = format.url
+          end
+        end
+        -- prefer streaming formats
+        for key, format in pairs(json.formats) do
+          if format.manifest_url then
+            outurl = format.manifest_url
+          end
         end
       end
     end
@@ -118,7 +133,13 @@ function parse()
         --actors
         
         meta         = json;
+        options      = {};
       }
+
+      if not out_includes_audio and audiourl then
+        item['options'][':input-slave'] = ":input-slave="..audiourl;
+      end
+
       table.insert(tracks, item)
     end
   end
