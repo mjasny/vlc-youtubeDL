@@ -134,12 +134,12 @@ function parse()
         episode      = json.episode or json.episode_number;
         show_name    = json.series;
         --actors
-        
+
         meta         = json;
         options      = {};
       }
 
-      if not out_includes_audio and audiourl then
+      if not out_includes_audio and audiourl and outurl ~= audiourl then
         item['options'][':input-slave'] = ":input-slave="..audiourl;
       end
 
