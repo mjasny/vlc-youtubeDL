@@ -15,6 +15,15 @@ function probe()
   end
 end
 
+function _get_format_url(format)
+  -- prefer streaming formats
+  if format.manifest_url then
+    return format.manifest_url
+  else
+    return format.url
+  end
+end
+
 -- Parse function.
 function parse()
   local url = vlc.access.."://"..vlc.path -- get full url
@@ -25,17 +34,17 @@ function parse()
   local tracks = {}
   while true do
     local output = file:read('*l')
-    
+
     if not output then
       break
     end
 
     local json = JSON.decode(output) -- decode the json-output from youtube-dl
-    
+
     if not json then
       break
     end
-    
+
     local outurl = json.url
     local out_includes_audio = true
     local audiourl = nil
@@ -43,34 +52,28 @@ function parse()
       if json.requested_formats then
         for key, format in pairs(json.requested_formats) do
           if format.vcodec ~= (nil or "none") then
-            outurl = format.url
+            outurl = _get_format_url(format)
             out_includes_audio = format.acodec ~= (nil or "none")
           end
 
           if format.acodec ~= (nil or "none") then
-            audiourl = format.url
+            audiourl = _get_format_url(format)
           end
         end
       else
         -- choose best
         for key, format in pairs(json.formats) do
-          outurl = format.url
+          outurl = _get_format_url(format)
         end
         -- prefer audio and video
         for key, format in pairs(json.formats) do
           if format.vcodec ~= (nil or "none") and format.acodec ~= (nil or "none") then
-            outurl = format.url
-          end
-        end
-        -- prefer streaming formats
-        for key, format in pairs(json.formats) do
-          if format.manifest_url then
-            outurl = format.manifest_url
+            outurl = _get_format_url(format)
           end
         end
       end
     end
-    
+
     if outurl then
       if (json._type == "url" or json._type == "url_transparent") and json.ie_key == "Youtube" then
         outurl = "https://www.youtube.com/watch?v="..outurl
@@ -80,7 +83,7 @@ function parse()
       if json.categories then
         category = json.categories[1]
       end
-      
+
       local year = nil
       if json.release_year then
         year = json.release_year
@@ -89,24 +92,24 @@ function parse()
       elseif json.upload_date then
         year = string.sub(json.upload_date, 1, 4)
       end
-      
+
       local thumbnail = nil
       if json.thumbnails then
         thumbnail = json.thumbnails[#json.thumbnails].url
       end
-      
+
       jsoncopy = {}
       for k in pairs(json) do
         jsoncopy[k] = tostring(json[k])
       end
-      
+
       json = jsoncopy
 
       item = {
         path         = outurl;
         name         = json.title;
         duration     = json.duration;
-        
+
         -- for a list of these check vlc/modules/lua/libs/sd.c
         title        = json.track or json.title;
         artist       = json.artist or json.creator or json.uploader or json.playlist_uploader;
@@ -131,12 +134,12 @@ function parse()
         episode      = json.episode or json.episode_number;
         show_name    = json.series;
         --actors
-        
+
         meta         = json;
         options      = {};
       }
 
-      if not out_includes_audio and audiourl then
+      if not out_includes_audio and audiourl and outurl ~= audiourl then
         item['options'][':input-slave'] = ":input-slave="..audiourl;
       end
 
