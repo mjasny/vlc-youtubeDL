@@ -44,7 +44,7 @@ function parse()
       end
       -- prefer audio and video
       for key, format in pairs(json.formats) do
-        if format.vcodec and format.acodec then
+        if format.vcodec ~= (nil or "none") and format.acodec ~= (nil or "none") then
           outurl = format.url
         end
       end
