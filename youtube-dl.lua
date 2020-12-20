@@ -30,7 +30,7 @@ function parse()
 
   --checks if youtube-dl exists, else download the right file or update it
 
-  local file = assert(io.popen('youtube-dl -j --flat-playlist '..url, 'r'))  --run youtube-dl in json mode
+  local file = assert(io.popen('youtube-dl -j --flat-playlist "'..url..'"', 'r'))  --run youtube-dl in json mode
   local tracks = {}
   while true do
     local output = file:read('*l')
