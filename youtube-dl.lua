@@ -136,7 +136,7 @@ function parse()
         --actors
 
         meta         = json;
-        options      = {};
+        options      = {"start-time="..(json.start_time or 0)};
       }
 
       if not out_includes_audio and audiourl and outurl ~= audiourl then
