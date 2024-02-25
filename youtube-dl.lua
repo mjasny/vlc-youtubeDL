@@ -1,3 +1,6 @@
+-- If you experience some problems with with the old buggy dkjson version, like in issue #3
+-- You need to download the latest version of dkjson until https://code.videolan.org/videolan/vlc/-/merge_requests/3318 is merged.
+
 JSON = require "dkjson" -- load additional json routines
 
 -- Probe function.
